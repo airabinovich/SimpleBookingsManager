@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: SimpleBookingsManager
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+  datasource:
+    url: jdbc:postgresql://0.0.0.0/sbm
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    org: info
