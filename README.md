@@ -1,6 +1,6 @@
 # Simple Bookings Manager
 
-Experimental/Example application on how to use:
-* Gradle
-* Arrow-Kt
-* Liquibase
+Technologies used/tested in this application:
+* [Gradle](https://gradle.org/)
+* [Arrow-Kt](https://arrow-kt.io)
+* [Liquibase](https://www.liquibase.com/)

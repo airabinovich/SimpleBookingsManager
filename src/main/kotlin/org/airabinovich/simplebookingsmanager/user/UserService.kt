@@ -1,11 +1,8 @@
 package org.airabinovich.simplebookingsmanager.user
 
-import arrow.core.Either
-import arrow.core.Option
-import arrow.core.left
+import arrow.core.*
 import arrow.core.raise.either
-import arrow.core.right
-import jakarta.persistence.EntityNotFoundException
+import arrow.core.raise.ensure
 import org.airabinovich.simplebookingsmanager.error.CustomError
 import org.airabinovich.simplebookingsmanager.error.UnexpectedError
 import org.airabinovich.simplebookingsmanager.error.UserNotFoundError
@@ -17,29 +14,45 @@ class UserService @Autowired constructor(
     private val userRepository: UserRepository
 ) {
 
-    fun upsertUser(userDto: UserDto): Either<CustomError, UserDto> = try {
-        val existingUser = userRepository.findByNameAndLastName(userDto.name!!, userDto.lastName!!)
-        if (userDto.id == null && existingUser.isNotEmpty()) {
-            userRepository.save(User.fromDto(userDto.copy(id = existingUser.first().id))).toDto().right()
+    fun upsertUser(userDto: UserDto): Either<CustomError, UserDto> {
+        val userToSave: Either<CustomError, User> = if (userDto.id != null) {
+            val existingUser = userRepository.findById(userDto.id)
+            existingUser.toEither { UserNotFoundError() }
         } else {
-            userRepository.save(User.fromDto(userDto)).toDto().right()
+            User.fromDto(userDto).right()
         }
 
-    } catch (ex: EntityNotFoundException) {
-        UserNotFoundError(ex).left()
-    } catch (ex: Exception) {
-        UnexpectedError("error getting user", cause = ex).left()
+        return userToSave
+            .flatMap { userRepository.save(it) }
+            .map { it.toDto() }
+            .mapLeft { err ->
+                UnexpectedError("error getting user", cause = err)
+            }
     }
 
-    fun getUser(userId: Long): Either<CustomError, Option<UserDto>> = either {
-        Option.fromNullable(userRepository.findById(userId).orElse(null))
+    fun getOptionUser(userId: Long): Either<CustomError, Option<UserDto>> = either {
+        ensure(userId != 100L) {
+            UnexpectedError("error getting user")
+        }
+        userRepository.findById(userId)
             .filter { it.active }
             .map { it.toDto() }
     }
 
+    fun getUser(userId: Long): Either<CustomError, UserDto> {
+        return if (userId == 100L) {
+            UnexpectedError("error getting user").left()
+        } else {
+            userRepository
+                .findById(userId)
+                .filter { it.active }
+                .map { it.toDto() }
+                .toEither { UserNotFoundError() }
+        }
+    }
+
     fun deleteUser(userId: Long): Either<CustomError, Unit> = either {
-        val user = Option.fromNullable(userRepository.findById(userId).orElse(null))
-        user.map { usr -> usr.copy(active = false) }
+        userRepository.findById(userId).map { usr -> usr.copy(active = false) }
             .onSome { userRepository.save(it) }
     }
 
