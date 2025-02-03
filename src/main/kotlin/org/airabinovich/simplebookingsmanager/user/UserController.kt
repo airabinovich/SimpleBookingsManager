@@ -29,7 +29,6 @@ class UserController @Autowired constructor(
 
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteUser(@PathVariable("userId") userId: Long): ResponseEntity<UserDto> = userService.deleteUser(userId)
         .map { ResponseEntity<UserDto>(HttpStatus.NO_CONTENT) }
         .getOrElse { err ->
