@@ -44,7 +44,7 @@ open class PostgresDatabaseUserRepository(
             }
             return persistedUser.right()
         } catch (ex: PersistenceException) {
-            return UserAlreadyExistsError(ex).left()
+            return UserAlreadyExistsError().left()
         } catch (ex: Exception) {
             return UnexpectedError("Error saving user", ex).left()
         }

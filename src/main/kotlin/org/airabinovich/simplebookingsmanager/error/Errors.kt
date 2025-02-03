@@ -2,26 +2,26 @@ package org.airabinovich.simplebookingsmanager.error
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-@JsonIgnoreProperties(value = ["stackTrace"])
-sealed class CustomError(message: String, cause: Throwable? = null) : Throwable(message, cause) {
-    // Unfortunately we need to extend Throwable to have a stacktrace and due to compatibility with logger's cause
+sealed class CustomError(val message: String) {
     override fun toString(): String {
-        return message!!
+        return message
     }
 }
 
-class UnexpectedError(message: String, cause: Throwable? = null) : CustomError(message, cause)
+class UnexpectedError(
+    message: String,
+    @JsonIgnoreProperties("stackTrace", "suppressed", "localizedMessage", "cause")
+    val cause: Throwable? = null,
+) : CustomError(message)
 
-open class EntityNotFoundError(entityName: String, cause: Throwable? = null) : CustomError(
+open class EntityNotFoundError(entityName: String) : CustomError(
     message = "Entity $entityName not found",
-    cause = cause
 )
 
-class UserNotFoundError(cause: Throwable? = null) : EntityNotFoundError("user", cause)
+class UserNotFoundError : EntityNotFoundError("user")
 
-open class EntityAlreadyExistsError(entityName: String, cause: Throwable? = null) : CustomError(
+open class EntityAlreadyExistsError(entityName: String) : CustomError(
     message = "Entity $entityName already exists",
-    cause = cause
 )
 
-class UserAlreadyExistsError(cause: Throwable? = null) : EntityAlreadyExistsError("user", cause)
+class UserAlreadyExistsError : EntityAlreadyExistsError("user")
