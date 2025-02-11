@@ -37,7 +37,7 @@ class UserService @Autowired constructor(
     }
 
     fun upsertUserWithBind(userDto: UserDto): Either<CustomError, UserDto> = either {
-        val userToSave = if (userDto.id == null) {
+        val userToSave: User = if (userDto.id == null) {
             User.fromDto(userDto)
         } else {
             userRepository.findById(userDto.id)
@@ -45,7 +45,7 @@ class UserService @Autowired constructor(
                 .bind()
         }
 
-        val savedUser = userRepository.save(userToSave).bind()
+        val savedUser: User = userRepository.save(userToSave).bind()
 
         return savedUser.toDto().right()
     }
@@ -76,7 +76,8 @@ class UserService @Autowired constructor(
     }
 
     fun deleteUser(userId: Long): Either<CustomError, Unit> = either {
-        userRepository.findById(userId).map { usr -> usr.copy(active = false) }
+        userRepository.findById(userId)
+            .map { usr -> usr.copy(active = false) }
             .onSome { userRepository.save(it) }
     }
 

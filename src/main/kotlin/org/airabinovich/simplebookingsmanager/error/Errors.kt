@@ -14,13 +14,13 @@ class UnexpectedError(
     val cause: Throwable? = null,
 ) : CustomError(message)
 
-open class EntityNotFoundError(entityName: String) : CustomError(
+sealed class EntityNotFoundError(entityName: String) : CustomError(
     message = "Entity $entityName not found",
 )
 
 class UserNotFoundError : EntityNotFoundError("user")
 
-open class EntityAlreadyExistsError(entityName: String) : CustomError(
+sealed class EntityAlreadyExistsError(entityName: String) : CustomError(
     message = "Entity $entityName already exists",
 )
 
